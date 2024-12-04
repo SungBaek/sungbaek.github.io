@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Multi-Page Site</title>
+    <style>
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <button onclick="showPage('home')">Home</button>
+        <button onclick="showPage('about')">About</button>
+        <button onclick="showPage('game')">Game</button>
+    </nav>
+
+    <div id="home" class="page active">
+        <h1>Home Page</h1>
+        <p>Welcome to our website!</p>
+    </div>
+
+    <div id="about" class="page">
+        <h1>About Page</h1>
+        <p>Learn more about us here.</p>
+    </div>
+
+    <div id="game" class="page">
+        <h1>Game Page</h1>
+        <p>Play our awesome game!</p>
+    </div>
+
+    <script>
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+        }
+    </script>
+</body>
+</html>
