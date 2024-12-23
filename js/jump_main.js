@@ -2,8 +2,8 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        canvas.width = 1200
-        canvas.height = 400
+        canvas.width = 800
+        canvas.height = 300
         // Color Enum
         const Colors = Object.freeze({
             PLAYER: 'blue',
@@ -23,8 +23,8 @@
         const player = {
             x: 50,
             y: canvas.height - 50,
-            width: 30,
-            height: 50,
+            width: 60,
+            height: 100,
             jumpStrength: 10,
             velocity: 0,
             isJumping: false,
@@ -35,7 +35,7 @@
 
 
         const playerImage = new Image();
-        playerImage.src = 'imgs/fake_derpy.png'
+        playerImage.src = 'imgs/side_koala.png'
         // Obstacles array
         const obstacles = [];
 
@@ -65,11 +65,18 @@
             intersects(player) {
                 // some buffer
                 return !(
-                    player.x + 5> this.x + this.width ||
-                    player.x + player.width < this.x + 5 ||
+                    player.x + 15> this.x + this.width ||
+                    player.x + player.width < this.x + 15 ||
                     player.y + 5> this.y + this.height ||
                     player.y + player.height < this.y +5
                 );
+            }
+        }
+        // game functions
+        function jump() {
+            if (!player.isJumping) {
+                player.velocity = -player.jumpStrength;
+                player.isJumping = true;
             }
         }
 
@@ -91,13 +98,15 @@
         }
 
         // Input handling
+        canvas.addEventListener('touchstart', function(event) {
+            event.preventDefault();
+            jump();
+        }, { passive: false });
+
         document.addEventListener('keydown', (event) => {
             switch(event.code) {
                 case 'Space':
-                    if (!player.isJumping) {
-                        player.velocity = -player.jumpStrength;
-                        player.isJumping = true;
-                    }
+                    jump();
                     break;
                 case 'ArrowLeft':
                     player.movingLeft = true;
