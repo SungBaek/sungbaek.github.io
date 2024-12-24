@@ -1,223 +1,194 @@
-  // Game configuration
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        canvas.width = 800
-        canvas.height = 300
-        // Color Enum
-        const Colors = Object.freeze({
-            PLAYER: 'blue',
-            OBSTACLE: 'red',
-            GROUND: 'green',
-            BACKGROUND: '#87CEEB'
-        });
-
-        // Game state
-        const game = {
-            score: 0,
-            speed: 6,
-            difficulty: 1
-        };
-
-        // Player properties
-        const player = {
-            x: 50,
-            y: canvas.height - 50,
-            width: 60,
-            height: 100,
-            jumpStrength: 10,
-            velocity: 0,
-            isJumping: false,
-            speed: 5,
-            movingLeft: false,
-            movingRight: false
-        };
+ // Game configuration
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
 
-        const playerImage = new Image();
-        playerImage.src = 'imgs/side_koala.png'
-        // Obstacles array
-        const obstacles = [];
 
-        // Obstacle class
-        class Obstacle {
-            constructor() {
-                this.width = 30;
-                this.height = 50;
-                this.x = canvas.width;
-                this.y = canvas.height - this.height - 50; // Ground level
-            }
+canvas.width = CANVAS_WIDTH;
+canvas.height = CANVAS_HEIGHT;
 
-            update() {
-                this.x -= game.speed;
-            }
+// Color Enum
+const Colors = Object.freeze({
+    PLAYER: 'blue',
+    OBSTACLE: 'red',
+    GROUND: 'green',
+    BACKGROUND: '#87CEEB',
+    SKY: '#ade2f0'
+});
 
-            draw() {
-                ctx.fillStyle = Colors.OBSTACLE;
-                ctx.fillRect(this.x, this.y, this.width, this.height);
-            }
+// Game state
+const game = {
+    score: 0,
+    speed: 8,
+    difficulty: 1
+};
 
-            isOffScreen() {
-                return this.x + this.width < 0;
-            }
+// Player properties
+const player = {
+    x: 50,
+    y: canvas.height - GROUND_HEIGHT,
+    width: 140,
+    height: 140,
+    jumpStrength: 14,
+    velocity: 0,
+    isJumping: false,
+    speed: 5,
+    movingLeft: false,
+    movingRight: false
+};
 
-            // Collision detection
-            intersects(player) {
-                // some buffer
-                return !(
-                    player.x + 15> this.x + this.width ||
-                    player.x + player.width < this.x + 15 ||
-                    player.y + 5> this.y + this.height ||
-                    player.y + player.height < this.y +5
-                );
-            }
-        }
-        // game functions
-        function jump() {
-            if (!player.isJumping) {
-                player.velocity = -player.jumpStrength;
-                player.isJumping = true;
-            }
-        }
 
-        // Ground properties
-        const ground = {
-            height: 50
-        };
+const playerImage = new Image();
+const groundImage = new Image();
+playerImage.src = 'imgs/side_koala_big.png';
+groundImage.src = 'imgs/ground.png';
+// Obstacles array
+const obstacles = [];
 
-        // Game physics constants
-        const GRAVITY = 0.5;
+// game functions
+function jump() {
+    if (!player.isJumping) {
+        player.velocity = -player.jumpStrength;
+        player.isJumping = true;
+    }
+}
 
-        // Obstacle spawning
-        function spawnObstacle() {
-            if (obstacles.length <= 3) {
-                if (Math.random() < 0.02 * game.difficulty) {
-                    obstacles.push(new Obstacle());
-                }
-            }
-        }
+// Input handling
+canvas.addEventListener('touchstart', function(event) {
+    event.preventDefault();
+    jump();
+}, { passive: false });
 
-        // Input handling
-        canvas.addEventListener('touchstart', function(event) {
-            event.preventDefault();
+document.addEventListener('keydown', (event) => {
+    switch(event.code) {
+        case 'Space':
             jump();
-        }, { passive: false });
+            break;
+    }
+});
 
-        document.addEventListener('keydown', (event) => {
-            switch(event.code) {
-                case 'Space':
-                    jump();
-                    break;
-                case 'ArrowLeft':
-                    player.movingLeft = true;
-                    break;
-                case 'ArrowRight':
-                    player.movingRight = true;
-                    break;
-            }
-        });
+// Key release handling
+document.addEventListener('keyup', (event) => {
+    // switch(event.code) {
+    //     case 'ArrowLeft':
+    //         player.movingLeft = false;
+    //         break;
+    //     case 'ArrowRight':
+    //         player.movingRight = false;
+    //         break;
+    // }
+});
 
-        // Key release handling
-        document.addEventListener('keyup', (event) => {
-            switch(event.code) {
-                case 'ArrowLeft':
-                    player.movingLeft = false;
-                    break;
-                case 'ArrowRight':
-                    player.movingRight = false;
-                    break;
-            }
-        });
+// Game update logic
+function update() {
+    // Player horizontal movement
+    if (player.movingLeft) {
+        player.x -= player.speed;
+    }
+    if (player.movingRight) {
+        player.x += player.speed;
+    }
 
-        // Game update logic
-        function update() {
-            // Player horizontal movement
-            if (player.movingLeft) {
-                player.x -= player.speed;
-            }
-            if (player.movingRight) {
-                player.x += player.speed;
-            }
+    // Boundary checking
+    player.x = Math.max(0, Math.min(player.x, canvas.width - player.width));
 
-            // Boundary checking
-            player.x = Math.max(0, Math.min(player.x, canvas.width - player.width));
+    // Gravity and jumping
+    player.velocity += GRAVITY;
+    player.y += player.velocity;
 
-            // Gravity and jumping
-            player.velocity += GRAVITY;
-            player.y += player.velocity;
+    // Ground collision
+    if (player.y + player.height >= canvas.height - GROUND_HEIGHT) {
+        player.y = canvas.height - GROUND_HEIGHT - player.height;
+        player.velocity = 0;
+        player.isJumping = false;
+    }
 
-            // Ground collision
-            if (player.y + player.height >= canvas.height - ground.height) {
-                player.y = canvas.height - ground.height - player.height;
-                player.velocity = 0;
-                player.isJumping = false;
-            }
+    // Spawn obstacles
+    spawnObstacle(obstacles, game.difficulty);
 
-            // Spawn obstacles
-            spawnObstacle();
+    // Update and check obstacles
+    const idxToRemove = [];
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+        obstacles[i].update(game);
 
-            // Update and check obstacles
-            for (let i = obstacles.length - 1; i >= 0; i--) {
-                obstacles[i].update();
-
-                // Remove off-screen obstacles
-                if (obstacles[i].isOffScreen()) {
-                    obstacles.splice(i, 1);
-                    game.score++;
-                }
-
-                // Check for collisions
-                if (obstacles[i].intersects(player)) {
-                    // Game over logic
-                    alert(`Game Over! Score: ${game.score}`);
-                    resetGame();
-                }
-            }
-
-            // Gradually increase difficulty
-            if (game.score % 10 === 0 && game.score > 0) {
-                game.difficulty += 0.1;
-                game.speed += 0.1;
-            }
+        // Check for collisions
+        if (obstacles[i].intersects(player)) {
+            // Game over logic
+            alert(`Game Over! Score: ${game.score}`);
+            resetGame();
+            break;
         }
 
-        // Reset game state
-        function resetGame() {
-            obstacles.length = 0;
-            game.score = 0;
-            game.difficulty = 1;
-            game.speed = 3;
-            player.x = 50;
-            player.y = canvas.height - 50;
+        // Mark to remove off-screen obstacles
+        if (obstacles[i].isOffScreen()) {
+            idxToRemove.push(i);
+            game.score++;
         }
 
-        // Rendering
-        function render() {
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
-            // Draw ground
-            ctx.fillStyle = Colors.GROUND;
-            ctx.fillRect(0, canvas.height - ground.height, canvas.width, ground.height);
+    // remove obstacles after the loop 
+    idxToRemove.reverse().forEach((item, index) => {
+        obstacles.splice(index, 1);
+    })
+}
 
-            // Draw player
-            ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+// Reset game state
+function resetGame() {
+    obstacles.length = 0;
+    game.score = 0;
+    game.difficulty = 1;
+    game.speed = 8;
+    player.x = 50;
+    player.y = canvas.height - GROUND_HEIGHT;
+}
 
-            // Draw obstacles
-            obstacles.forEach(obstacle => obstacle.draw());
+// Rendering
+function render() {
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw score
-            ctx.fillStyle = 'black';
-            ctx.font = '20px Arial';
-            ctx.fillText(`Score: ${game.score}`, 10, 30);
-        }
 
-        // Game loop
-        function gameLoop() {
-            update();
-            render();
-            requestAnimationFrame(gameLoop);
-        }
+    // Draw sky
+    ctx.fillStyle = Colors.SKY;
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-        // Start the game
-        gameLoop();
+    // Draw ground
+    ctx.fillStyle = Colors.GROUND;
+    ctx.drawImage(groundImage, 0, canvas.height - GROUND_HEIGHT, canvas.width, GROUND_HEIGHT);
+
+
+    // Draw player
+    ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+
+    // Draw obstacles
+    obstacles.forEach(obstacle => obstacle.draw(ctx));
+
+    // Draw score
+    ctx.fillStyle = 'black';
+    ctx.font = '20px Arial';
+    ctx.fillText(`Score: ${game.score}`, 10, 30);
+}
+
+
+function resizeCanvas() {
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const scale = Math.min(windowWidth / CANVAS_WIDTH, windowHeight / CANVAS_HEIGHT);
+    
+    canvas.style.width = `${CANVAS_WIDTH * scale}px`;
+    canvas.style.height = `${CANVAS_HEIGHT * scale}px`;
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Game loop
+function gameLoop() {
+    update();
+    render();
+    requestAnimationFrame(gameLoop);
+}
+
+// Start the game
+gameLoop();
