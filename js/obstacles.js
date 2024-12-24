@@ -15,7 +15,7 @@ function computeAddSpeed(game) {
 class Obstacle {
     constructor(obstacleType) {
         this.x = canvas.width;
-        this.y = canvas.height - obstacleType.height - GROUND_HEIGHT + obstacleType.y;
+        this.y = canvas.height - obstacleType.height - GROUND_HEIGHT + obstacleType.y + 5;
         this.obstacleType = obstacleType;
         this.obstacleImage = new Image();
         this.obstacleImage.src = obstacleType.image;

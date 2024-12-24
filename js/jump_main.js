@@ -26,7 +26,7 @@ const game = {
 // Player properties
 const player = {
     x: 50,
-    y: canvas.height - GROUND_HEIGHT,
+    y: canvas.height - GROUND_HEIGHT + 13,
     width: 140,
     height: 140,
     jumpStrength: 14,
@@ -97,8 +97,8 @@ function update() {
     player.y += player.velocity;
 
     // Ground collision
-    if (player.y + player.height >= canvas.height - GROUND_HEIGHT) {
-        player.y = canvas.height - GROUND_HEIGHT - player.height;
+    if (player.y + player.height - 13 >= canvas.height - GROUND_HEIGHT) {
+        player.y = canvas.height - GROUND_HEIGHT - player.height + 13;
         player.velocity = 0;
         player.isJumping = false;
     }
@@ -140,7 +140,7 @@ function resetGame() {
     game.difficulty = 1;
     game.speed = 8;
     player.x = 50;
-    player.y = canvas.height - GROUND_HEIGHT;
+    player.y = canvas.height - GROUND_HEIGHT + 13;
 }
 
 // Rendering
